@@ -9,3 +9,4 @@ id*.py
 *.class
 *.jar
 *.tokens
+*.txt
