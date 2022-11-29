@@ -12,17 +12,38 @@ fragment MINUTES: [0-5][0-9] ;
 fragment DIAS	: ([0-2][0-9])|'3'[01] ;
 fragment MESES	: ('0'[0-9])|('1'[0-2]) ;
 fragment AÑOS	: NUMBER NUMBER NUMBER NUMBER ;
+fragment INT: 'int';
+fragment CHAR : 'char';
+fragment DOUBLE : 'double' ;
+EQUALS : '=' ;
 //fragment OPERADOR : [-+*/];
 
 PA : '(' ;
 PC : ')' ;
-INT: 'int';
-CHAR : 'char';
-DOUBLE : 'double' ;
+LLA : '{' ;
+LLC : '}' ;
+L_AND : '&&' ;
+L_OR  : '||' ;
+L_NOT : '!' ;
+C_EQUALS : '==' ;
+C_NOT_EQUALS : '!=';
+C_LESS : '<' ;
+C_LESS_OR_EQUAL : '<=' ;
+C_GREATER : '>' ;
+C_GREATER_OR_EQUAL : '>=' ;
+WHILE : 'while' ;
+TIPO : INT | CHAR | DOUBLE ;
 COMA : ',' ;
 PYC: ';' ; 
-EQUALS : '=' ;
 ID : (LETRA | '_')(LETRA | NUMBER | '_')* ; //empieza con ltra o _ y sigue con letra numero o _
+//ASIGNACION : EQUALS ' '? ('-'? NUMBER+|ID) ;
+
+/*Operaciones aritmetico logicas */
+SUMA : '+';
+RESTA: '-';
+MULT : '*';
+DIV  : '/';
+
 
 /*Horas entre las 03:12 y 11:27 */
 //HORARIO :  ; //[03-11] ':' [12-27]; ESTA MAL
@@ -43,7 +64,7 @@ FECHA2	: DIAS'/'('0'[2468]|('1'('0'|'2')))'/' AÑOS ;
 FECHA3	: (('1'[2-9])|('2'[0-3]))'/'MESES'/'AÑOS ;
 
 //NATURAL : NUMBER+ ;
-ENTERO	: '-'? NUMBER+;
+ENTERO	: NUMBER+;
 //CUENTA	: (NATURAL|ENTERO)+ OPERADOR+ (NATURAL|ENTERO)+;
 WS	: [ \t\n\r] -> skip;
 OTRO : . ;
@@ -79,21 +100,79 @@ bp: PA bp PC bp
 programa : instrucciones EOF ;
 
 instrucciones 	: instruccion instrucciones
-	      	|
+	      	| 
 	      	;
 
-instruccion	: declaracion
+instruccion	: inst_simple PYC
+		//| iwhile
+		| bloque
 		;
 
-declaracion	: INT secvar PYC
-		| CHAR secvar PYC
-		| DOUBLE secvar PYC
+inst_simple	: declaracion 
+		| asignacion 
+		| oal
+		;
+
+iwhile		: WHILE instruccion;
+
+bloque		: LLA instrucciones LLC
+		;
+
+declaracion	: TIPO secvar
+		;
+
+asignacion	: ID? EQUALS (ENTERO | ID | inst_simple)
 		;
 
 secvar		: ID COMA secvar
-		| ID EQUALS ID COMA secvar
-		| ID EQUALS ENTERO COMA secvar
-		| ID EQUALS ENTERO
-		| ID EQUALS ID
+		| ID asignacion COMA secvar
+		| ID asignacion
 		| ID
+		;
+
+test : oal;
+
+oal		: op_arit | op_logic
+		;
+
+op_arit		: term t
+		;
+
+term 		: factor f
+		;
+
+t		: SUMA term t
+		| RESTA term t
+		|
+		;
+
+factor		: ENTERO 
+		| ID
+		| PA oal PC
+		| L_NOT factor
+		;
+
+f		: MULT factor f
+		| DIV factor f
+		|
+		;
+
+op_logic	: l_term l_t
+		;
+
+l_term		: factor l_f
+		;
+
+l_t		: C_EQUALS l_term l_t
+		| C_NOT_EQUALS l_term l_t
+		| C_LESS l_term l_t
+		| C_LESS_OR_EQUAL l_term l_t
+		| C_GREATER l_term l_t
+		| C_GREATER_OR_EQUAL l_term l_t
+		|
+		;
+
+l_f		: L_AND factor l_f
+		| L_OR factor l_f
+		|
 		;
