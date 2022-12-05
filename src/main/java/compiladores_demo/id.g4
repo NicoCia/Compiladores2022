@@ -15,6 +15,7 @@ fragment AÑOS	: NUMBER NUMBER NUMBER NUMBER ;
 fragment INT: 'int';
 fragment CHAR : 'char';
 fragment DOUBLE : 'double' ;
+fragment FLOAT : 'float';
 EQUALS : '=' ;
 //fragment OPERADOR : [-+*/];
 
@@ -22,17 +23,14 @@ PA : '(' ;
 PC : ')' ;
 LLA : '{' ;
 LLC : '}' ;
-L_AND : '&&' ;
-L_OR  : '||' ;
-L_NOT : '!' ;
-C_EQUALS : '==' ;
-C_NOT_EQUALS : '!=';
-C_LESS : '<' ;
-C_LESS_OR_EQUAL : '<=' ;
-C_GREATER : '>' ;
-C_GREATER_OR_EQUAL : '>=' ;
+
 WHILE : 'while' ;
-TIPO : INT | CHAR | DOUBLE ;
+FOR : 'for' ;
+IF : 'if' ;
+ELSE : 'else' ;
+RET : 'return' ;
+BOOLEAN : 'true' | 'false' ;
+TIPO : INT | CHAR | DOUBLE | FLOAT ;
 COMA : ',' ;
 PYC: ';' ; 
 ID : (LETRA | '_')(LETRA | NUMBER | '_')* ; //empieza con ltra o _ y sigue con letra numero o _
@@ -43,7 +41,16 @@ SUMA : '+';
 RESTA: '-';
 MULT : '*';
 DIV  : '/';
-
+MOD  : '%';
+L_AND : '&&' ;
+L_OR  : '||' ;
+L_NOT : '!' ;
+C_EQUALS : '==' ;
+C_NOT_EQUALS : '!=';
+C_LESS : '<' ;
+C_LESS_OR_EQUAL : '<=' ;
+C_GREATER : '>' ;
+C_GREATER_OR_EQUAL : '>=' ;
 
 /*Horas entre las 03:12 y 11:27 */
 //HORARIO :  ; //[03-11] ':' [12-27]; ESTA MAL
@@ -104,7 +111,10 @@ instrucciones 	: instruccion instrucciones
 	      	;
 
 instruccion	: inst_simple PYC
-		//| iwhile
+		| inst_while
+		| inst_for
+		| inst_if
+		| ireturn
 		| bloque
 		;
 
@@ -113,7 +123,17 @@ inst_simple	: declaracion
 		| oal
 		;
 
-iwhile		: WHILE instruccion;
+inst_while	: WHILE oal instruccion 
+		;
+
+inst_for	: FOR PA (declaracion|asignacion) PYC oal PYC inst_simple PC instruccion 
+		;
+
+inst_if		: IF oal instruccion ELSE? instruccion? 
+		;
+
+ireturn		: RET (ID|ENTERO|BOOLEAN)? PYC
+		;
 
 bloque		: LLA instrucciones LLC
 		;
@@ -154,6 +174,7 @@ factor		: ENTERO
 
 f		: MULT factor f
 		| DIV factor f
+		| MOD factor f
 		|
 		;
 
