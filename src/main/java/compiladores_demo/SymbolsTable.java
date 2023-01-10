@@ -1,17 +1,23 @@
 package compiladores_demo;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+
+
 public class SymbolsTable {
     // Static variable reference of single_instance
     // of type Singleton
     private static SymbolsTable single_instance = null;
-    private DoublyLinkedList table;
+    private LinkedList<HashMap<String, Id>> table;
   
     // Constructor
     // Here we will be creating private constructor
     // restricted to this class itself
-    private SymbolsTable()
+    public SymbolsTable()
     {
-        this.table = new DoublyLinkedList();
+        this.table = new LinkedList<HashMap<String, Id>>();
     }
   
     // Static method
@@ -26,32 +32,32 @@ public class SymbolsTable {
 
     public void addContext()
     {   
-        table.addNode();
+        table.add(new HashMap<String, Id>());
 
 	    return ;
     }
 
     public void delContext()
     {   
-        table.delLastNode();
+        table.removeLast();
 
 	    return ;
     }
 
     public void addSymbol(Id id)
     {
-        table.tail.data.put(id.getName(), id);
+        table.getLast().put(id.getName(), id);
 
 	    return ;
     }
 
-    public Id finSymbol(String name){
-        Node temp = table.tail;
+    public Id findSymbol(String name){
+        Iterator<HashMap<String, Id>> itr = table.descendingIterator();
 
-        while (temp != table.head){
-            temp = temp.previous;
+        while (itr.hasNext()){
+            HashMap<String, Id> temp = itr.next();
 
-            if(temp.data.containsKey(name)) return temp.data.get(name);
+            if(temp.containsKey(name)) return temp.get(name);
         }
 
         
@@ -60,7 +66,7 @@ public class SymbolsTable {
 
     public Id findLocalSymbol(String name)
     {   
-        if(table.tail.data.containsKey(name)) return table.tail.data.get(name);
+        if(table.getLast().containsKey(name)) return table.getLast().get(name);
 
         return null;
     }

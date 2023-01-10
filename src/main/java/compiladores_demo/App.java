@@ -1,5 +1,5 @@
 package compiladores_demo;
-//import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -7,9 +7,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 // Las diferentes entradas se explicaran oportunamente
 public class App {
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello, World!!!");
+        // System.out.println("Hello, World!!!");
         // create a CharStream that reads from file
-        CharStream input = CharStreams.fromFileName("horas.txt");//"input/entrada.txt");
+        CharStream input = CharStreams.fromFileName("input/aritmetica.txt");//"input/entrada.txt");
 
         // create a lexer that feeds off of input CharStream
         compiladorLexer lexer = new compiladorLexer(input);
@@ -21,18 +21,18 @@ public class App {
         compiladorParser parser = new compiladorParser(tokens);
                 
         // create Listener
-        // ExpRegBaseListener escucha = new Escucha();
+        compiladorBaseListener escucha = new MiListener();
 
         // Conecto el objeto con Listeners al parser
-        // parser.addParseListener(escucha);
+        parser.addParseListener(escucha);
 
         // Solicito al parser que comience indicando una regla gramatical
         // En este caso la regla es el simbolo inicial
-        parser.s();
-        // ParseTree tree =  parser.s();
+        // parser.programa();
+        ParseTree tree =  parser.programa();
         // Conectamos el visitor
-        // Caminante visitor = new Caminante();
-        // visitor.visit(tree);
+        MiVisitor<ParseTree> visitor = new MiVisitor<ParseTree>();
+        visitor.visit(tree);
         // System.out.println(visitor);
         // System.out.println(visitor.getErrorNodes());
         // Imprime el arbol obtenido

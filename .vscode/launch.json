@@ -5,13 +5,6 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"type": "java",
-			"name": "Launch DoublyLinkedList",
-			"request": "launch",
-			"mainClass": "compiladores_demo.DoublyLinkedList",
-			"projectName": "compiladores"
-		},
-		{
 			"name": "Debug ANTLR4 grammar",
 			"type": "antlr-debug",
 			"request": "launch",

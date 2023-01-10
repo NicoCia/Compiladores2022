@@ -110,7 +110,9 @@ instrucciones 	: instruccion instrucciones
 	      	| 
 	      	;
 
-instruccion	: inst_simple PYC
+instruccion	: declaracion PYC
+		| asignacion PYC
+		| oal PYC
 		| inst_while
 		| inst_for
 		| inst_if
@@ -118,15 +120,10 @@ instruccion	: inst_simple PYC
 		| bloque
 		;
 
-inst_simple	: declaracion 
-		| asignacion 
-		| oal
+inst_while	: WHILE PA oal PC instruccion 
 		;
 
-inst_while	: WHILE oal instruccion 
-		;
-
-inst_for	: FOR PA (declaracion|asignacion) PYC oal PYC inst_simple PC instruccion 
+inst_for	: FOR PA declaracion PYC oal PYC (oal|asignacion) PC instruccion 
 		;
 
 inst_if		: IF oal instruccion ELSE? instruccion? 
@@ -138,21 +135,21 @@ ireturn		: RET (ID|ENTERO|BOOLEAN)? PYC
 bloque		: LLA instrucciones LLC
 		;
 
-declaracion	: TIPO secvar
+declaracion	: TIPO ID asignacion secvar
 		;
 
-asignacion	: ID? EQUALS (ENTERO | ID | inst_simple)
+asignacion	: ID? EQUALS (oal | asignacion)
+		|
 		;
 
-secvar		: ID COMA secvar
-		| ID asignacion COMA secvar
-		| ID asignacion
-		| ID
+secvar		: COMA ID asignacion secvar
+		//| COMA ID secvar
+		|
 		;
 
 test : oal;
 
-oal		: op_arit | op_logic
+oal		: (op_arit | op_logic)
 		;
 
 op_arit		: term t
