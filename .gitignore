@@ -3,8 +3,8 @@
 target
 .antlr
 __pycache__
-id*.java
-id*.py
+compilador*.java
+compilador*.py
 *.out
 *.class
 *.jar

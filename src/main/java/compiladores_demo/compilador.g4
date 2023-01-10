@@ -1,4 +1,4 @@
- grammar id;
+ grammar compilador;
 
 @header {
 package compiladores_demo;
@@ -71,7 +71,7 @@ FECHA2	: DIAS'/'('0'[2468]|('1'('0'|'2')))'/' AÑOS ;
 FECHA3	: (('1'[2-9])|('2'[0-3]))'/'MESES'/'AÑOS ;
 
 //NATURAL : NUMBER+ ;
-ENTERO	: NUMBER+;
+ENTERO	: '-'? NUMBER+;
 //CUENTA	: (NATURAL|ENTERO)+ OPERADOR+ (NATURAL|ENTERO)+;
 WS	: [ \t\n\r] -> skip;
 OTRO : . ;
