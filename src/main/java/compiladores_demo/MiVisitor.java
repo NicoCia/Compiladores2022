@@ -6,7 +6,7 @@ import compiladores_demo.compiladorParser.InstruccionContext;
 import compiladores_demo.compiladorParser.InstruccionesContext;
 import compiladores_demo.compiladorParser.ProgramaContext;
 
-public class MiVisitor<ParseTree> extends compiladorBaseVisitor<ParseTree> {
+public class MiVisitor extends compiladorBaseVisitor<ParseTree> {
 
 	@Override
 	public ParseTree visitPrograma(ProgramaContext ctx) {

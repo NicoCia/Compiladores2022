@@ -23,6 +23,8 @@ PA : '(' ;
 PC : ')' ;
 LLA : '{' ;
 LLC : '}' ;
+CA : '[';
+CC : ']';
 
 WHILE : 'while' ;
 FOR : 'for' ;
@@ -34,6 +36,7 @@ TIPO : INT | CHAR | DOUBLE | FLOAT ;
 COMA : ',' ;
 PYC: ';' ; 
 ID : (LETRA | '_')(LETRA | NUMBER | '_')* ; //empieza con ltra o _ y sigue con letra numero o _
+ARRAY : ID (CA (ID|ENTERO) CC)*;
 //ASIGNACION : EQUALS ' '? ('-'? NUMBER+|ID) ;
 
 /*Operaciones aritmetico logicas */
@@ -72,6 +75,7 @@ FECHA3	: (('1'[2-9])|('2'[0-3]))'/'MESES'/'AÑOS ;
 
 //NATURAL : NUMBER+ ;
 ENTERO	: '-'? NUMBER+;
+//FLOAT	: [+-]?(NUMBER*[.])?[0-9]+;
 //CUENTA	: (NATURAL|ENTERO)+ OPERADOR+ (NATURAL|ENTERO)+;
 WS	: [ \t\n\r] -> skip;
 OTRO : . ;
@@ -112,6 +116,8 @@ instrucciones 	: instruccion instrucciones
 
 instruccion	: declaracion PYC
 		| asignacion PYC
+		| functionDecl PYC?
+		| functionCall PYC
 		| oal PYC
 		| inst_while
 		| inst_for
@@ -129,20 +135,43 @@ inst_for	: FOR PA declaracion PYC oal PYC (oal|asignacion) PC instruccion
 inst_if		: IF oal instruccion ELSE? instruccion? 
 		;
 
-ireturn		: RET (ID|ENTERO|BOOLEAN)? PYC
+ireturn		: RET (ID|ENTERO|BOOLEAN|oal)? PYC //expr? PYC 
 		;
 
 bloque		: LLA instrucciones LLC
 		;
 
-declaracion	: TIPO ID asignacion secvar
+functionDecl	: TIPO ID PA formalParameters? PC (bloque|PYC) // "void f(int x) {...}"
 		;
 
-asignacion	: ID? EQUALS (oal | asignacion)
+functionCall	: ID PA exprList? PC //func call like f(), f(x), f(1,2)
+		;
+
+exprList 	: (expr|oal) (COMA exprList)* 
+		;
+
+expr		: functionCall
+		| ARRAY
+		// | ID CA expr CC
+		| ID
+		| ENTERO
+		| '(' expr ')'
+		;
+
+formalParameters: formalParameter (COMA formalParameter)*
+		;
+
+formalParameter	: TIPO ID
+		;
+
+declaracion	: TIPO expr asignacion secvar
+		;
+
+asignacion	: expr? EQUALS (expr | asignacion | oal)//(ID | oal | asignacion)
 		|
 		;
 
-secvar		: COMA ID asignacion secvar
+secvar		: COMA (ID|ARRAY) asignacion secvar
 		//| COMA ID secvar
 		|
 		;
@@ -164,6 +193,7 @@ t		: SUMA term t
 		;
 
 factor		: ENTERO 
+		| functionCall
 		| ID
 		| PA oal PC
 		| L_NOT factor

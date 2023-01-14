@@ -1,5 +1,6 @@
 package compiladores_demo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -70,6 +71,35 @@ public class SymbolsTable {
 
         return null;
     }
+
+    public ArrayList<Id> getUnusedSymbols(){
+        ArrayList<Id> ret = new ArrayList<Id>();
+        Iterator<Id> itr = table.getLast().values().iterator();
+
+        while(itr.hasNext()){
+            Id temp = itr.next();
+            if(!temp.getUsed()) ret.add(temp);
+        }
+
+        return ret;
+    }
+
+    @Override
+    public String toString() {
+        String texto = "";
+        Iterator<HashMap<String, Id>> itr = table.descendingIterator();
+
+        while (itr.hasNext()){
+            Iterator <Id> temp = itr.next().values().iterator();
+            while (temp.hasNext()){
+                texto += temp.next().toString() + "\n";
+            }
+
+        }
+        return texto;
+    }
+
+    
 
 
 

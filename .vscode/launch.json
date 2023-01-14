@@ -9,7 +9,7 @@
 			"type": "antlr-debug",
 			"request": "launch",
 			"grammar": "${file}",
-			"input": "input/aritmetica.txt",
+			"input": "input/funcion.txt",
 			"startRule": "programa",
 			"printParseTree": true,
 			"visualParseTree": true

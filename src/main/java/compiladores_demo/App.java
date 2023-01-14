@@ -9,7 +9,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         // System.out.println("Hello, World!!!");
         // create a CharStream that reads from file
-        CharStream input = CharStreams.fromFileName("input/aritmetica.txt");//"input/entrada.txt");
+        CharStream input = CharStreams.fromFileName("input/funcion.txt");//"input/entrada.txt");
 
         // create a lexer that feeds off of input CharStream
         compiladorLexer lexer = new compiladorLexer(input);
@@ -29,15 +29,22 @@ public class App {
         // Solicito al parser que comience indicando una regla gramatical
         // En este caso la regla es el simbolo inicial
         // parser.programa();
-        ParseTree tree =  parser.programa();
+        // ParseTree tree =  
+        parser.programa();
         // Conectamos el visitor
-        MiVisitor<ParseTree> visitor = new MiVisitor<ParseTree>();
-        visitor.visit(tree);
-        // System.out.println(visitor);
-        // System.out.println(visitor.getErrorNodes());
-        // Imprime el arbol obtenido
-        // System.out.println(tree.toStringTree(parser));
-        // System.out.println(escucha);
-        
+        // MiVisitor visitor = new MiVisitor();
+        // visitor.visit(tree);
+        // // System.out.println(visitor);
+        // // System.out.println(visitor.getErrorNodes());
+        // // Imprime el arbol obtenido
+        // // System.out.println(tree.toStringTree(parser));
+        // // System.out.println(escucha);
+
+
+        // Caminante walker = new Caminante();
+        // walker.visit(tree);
+        // System.out.println(walker);
+
+        // System.out.println(walker.getErrorNodes());
     }
 }
