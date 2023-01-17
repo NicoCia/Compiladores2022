@@ -37,6 +37,10 @@ COMA : ',' ;
 PYC: ';' ; 
 ID : (LETRA | '_')(LETRA | NUMBER | '_')* ; //empieza con ltra o _ y sigue con letra numero o _
 ARRAY : ID (CA (ID|ENTERO) CC)*;
+ENTERO	: '-'? NUMBER+;
+//FLOAT	: [+-]?(NUMBER*[.])?[0-9]+;
+//CUENTA	: (NATURAL|ENTERO)+ OPERADOR+ (NATURAL|ENTERO)+;
+
 //ASIGNACION : EQUALS ' '? ('-'? NUMBER+|ID) ;
 
 /*Operaciones aritmetico logicas */
@@ -54,58 +58,57 @@ C_LESS : '<' ;
 C_LESS_OR_EQUAL : '<=' ;
 C_GREATER : '>' ;
 C_GREATER_OR_EQUAL : '>=' ;
-
+LINE_COMMENT : '//' .*? '\r'? '\n' -> skip ; // Match "//" stuff '\n'
+COMMENT : '/*' .*? '*/' -> skip ; // Match "/*" stuff "*/"
+WS	: [ \t\n\r] -> skip;
+OTRO : . ;
 /*Horas entre las 03:12 y 11:27 */
 //HORARIO :  ; //[03-11] ':' [12-27]; ESTA MAL
 
 
-NOMBRE	: 'nico';
-ENDW	: LETRA+ '.'	;
-MAYUSW	: MAYUS+ LETRA+ ;
-PLURALVW	: VOCALES LETRA+ 's';
-WORD	: LETRA+ -> skip;
-HOUR1	: ('1'[3-5])':'(MINUTES);
-HOUR2	: ('0''3'':'('1'[2-9]|[2-5][0-9])) 
-	| (('0'[4-9]|'1''0') ':' MINUTES) 
-	| ('1''1' ':' ([01][0-9]|'2'[0-7]));
+// NOMBRE	: 'nico';
+// ENDW	: LETRA+ '.'	;
+// MAYUSW	: MAYUS+ LETRA+ ;
+// PLURALVW	: VOCALES LETRA+ 's';
+// WORD	: LETRA+ -> skip;
+// HOUR1	: ('1'[3-5])':'(MINUTES);
+// HOUR2	: ('0''3'':'('1'[2-9]|[2-5][0-9])) 
+// 	| (('0'[4-9]|'1''0') ':' MINUTES) 
+// 	| ('1''1' ':' ([01][0-9]|'2'[0-7]));
 
-FECHA1	: DIAS'/'MESES'/''2''0'([01][0-9]|'2''0') ;
-FECHA2	: DIAS'/'('0'[2468]|('1'('0'|'2')))'/' AÑOS ;
-FECHA3	: (('1'[2-9])|('2'[0-3]))'/'MESES'/'AÑOS ;
+// FECHA1	: DIAS'/'MESES'/''2''0'([01][0-9]|'2''0') ;
+// FECHA2	: DIAS'/'('0'[2468]|('1'('0'|'2')))'/' AÑOS ;
+// FECHA3	: (('1'[2-9])|('2'[0-3]))'/'MESES'/'AÑOS ;
 
-//NATURAL : NUMBER+ ;
-ENTERO	: '-'? NUMBER+;
-//FLOAT	: [+-]?(NUMBER*[.])?[0-9]+;
-//CUENTA	: (NATURAL|ENTERO)+ OPERADOR+ (NATURAL|ENTERO)+;
-WS	: [ \t\n\r] -> skip;
-OTRO : . ;
+// //NATURAL : NUMBER+ ;
 
 
-/*horas : HOUR2 { System.out.println("HOUR2 ->" + $HOUR2.getText() + "<--"); } horas
-	| OTRO horas
-	| EOF
-	;*/
 
-s :	NOMBRE { System.out.println("NOMBRE ->" + $NOMBRE.getText() + "<--"); } s 	
-	| ENDW { System.out.println("ENDW ->" + $ENDW.getText() + "<--"); } s
-	| MAYUSW { System.out.println("MAYUSW ->" + $MAYUSW.getText() + "<--"); } s
-	| PLURALVW { System.out.println("PLURALVW ->" + $PLURALVW.getText() + "<--"); } s
-	| HOUR1 { System.out.println("HOUR1 ->" + $HOUR1.getText() + "<--"); } s
-	| HOUR2 { System.out.println("HOUR2 ->" + $HOUR2.getText() + "<--"); } s
-	| FECHA1 { System.out.println("FECHA1 ->" + $FECHA1.getText() + "<--"); } s
-	| FECHA2 { System.out.println("FECHA2 ->" + $FECHA2.getText() + "<--"); } s
-	| FECHA3 { System.out.println("FECHA3 ->" + $FECHA3.getText() + "<--"); } s	
-	//| ID { System.out.println("ID ->" + $ID.getText() + "<--"); } s
-	//| NATURAL { System.out.println("NATURAL ->" + $NATURAL.getText() + "<--"); } s
-	//| ENTERO { System.out.println("ENTERO ->" + $ENTERO.getText() + "<--"); } s
-	//| CUENTA { System.out.println("CUENTA ->" + $CUENTA.getText() + "<--"); } s
-	| OTRO { System.out.println("Otro -> |" + $OTRO.getText() + "| <--"); } s
-	| EOF
-	;
+// /*horas : HOUR2 { System.out.println("HOUR2 ->" + $HOUR2.getText() + "<--"); } horas
+// 	| OTRO horas
+// 	| EOF
+// 	;*/
 
-bp: PA bp PC bp
-  | 
-  ;
+// s :	NOMBRE { System.out.println("NOMBRE ->" + $NOMBRE.getText() + "<--"); } s 	
+// 	| ENDW { System.out.println("ENDW ->" + $ENDW.getText() + "<--"); } s
+// 	| MAYUSW { System.out.println("MAYUSW ->" + $MAYUSW.getText() + "<--"); } s
+// 	| PLURALVW { System.out.println("PLURALVW ->" + $PLURALVW.getText() + "<--"); } s
+// 	| HOUR1 { System.out.println("HOUR1 ->" + $HOUR1.getText() + "<--"); } s
+// 	| HOUR2 { System.out.println("HOUR2 ->" + $HOUR2.getText() + "<--"); } s
+// 	| FECHA1 { System.out.println("FECHA1 ->" + $FECHA1.getText() + "<--"); } s
+// 	| FECHA2 { System.out.println("FECHA2 ->" + $FECHA2.getText() + "<--"); } s
+// 	| FECHA3 { System.out.println("FECHA3 ->" + $FECHA3.getText() + "<--"); } s	
+// 	//| ID { System.out.println("ID ->" + $ID.getText() + "<--"); } s
+// 	//| NATURAL { System.out.println("NATURAL ->" + $NATURAL.getText() + "<--"); } s
+// 	//| ENTERO { System.out.println("ENTERO ->" + $ENTERO.getText() + "<--"); } s
+// 	//| CUENTA { System.out.println("CUENTA ->" + $CUENTA.getText() + "<--"); } s
+// 	| OTRO { System.out.println("Otro -> |" + $OTRO.getText() + "| <--"); } s
+// 	| EOF
+// 	;
+
+// bp: PA bp PC bp
+//   | 
+//   ;
 
 
 programa : instrucciones EOF ;
@@ -129,33 +132,16 @@ instruccion	: declaracion PYC
 inst_while	: WHILE PA oal PC instruccion 
 		;
 
-inst_for	: FOR PA declaracion PYC oal PYC (oal|asignacion) PC instruccion 
+inst_for	: FOR PA (declaracion|asignacion) PYC oal PYC (oal|asignacion) PC instruccion 
 		;
 
-inst_if		: IF oal instruccion ELSE? instruccion? 
+inst_if		: IF PA oal PC instruccion ELSE? instruccion? 
 		;
 
 ireturn		: RET (ID|ENTERO|BOOLEAN|oal)? PYC //expr? PYC 
 		;
 
 bloque		: LLA instrucciones LLC
-		;
-
-functionDecl	: TIPO ID PA formalParameters? PC (bloque|PYC) // "void f(int x) {...}"
-		;
-
-functionCall	: ID PA exprList? PC //func call like f(), f(x), f(1,2)
-		;
-
-exprList 	: (expr|oal) (COMA exprList)* 
-		;
-
-expr		: functionCall
-		| ARRAY
-		// | ID CA expr CC
-		| ID
-		| ENTERO
-		| '(' expr ')'
 		;
 
 formalParameters: formalParameter (COMA formalParameter)*
@@ -167,7 +153,7 @@ formalParameter	: TIPO ID
 declaracion	: TIPO expr asignacion secvar
 		;
 
-asignacion	: expr? EQUALS (expr | asignacion | oal)//(ID | oal | asignacion)
+asignacion	: expr? EQUALS (expr | oal | asignacion)//(ID | oal | asignacion)
 		|
 		;
 
@@ -175,8 +161,6 @@ secvar		: COMA (ID|ARRAY) asignacion secvar
 		//| COMA ID secvar
 		|
 		;
-
-test : oal;
 
 oal		: (op_arit | op_logic)
 		;
@@ -193,10 +177,10 @@ t		: SUMA term t
 		;
 
 factor		: ENTERO 
-		| functionCall
 		| ID
 		| PA oal PC
 		| L_NOT factor
+		| functionCall
 		;
 
 f		: MULT factor f
@@ -223,4 +207,20 @@ l_t		: C_EQUALS l_term l_t
 l_f		: L_AND factor l_f
 		| L_OR factor l_f
 		|
+		;
+
+functionDecl	: TIPO ID PA formalParameters? PC (bloque|PYC) // "void f(int x) {...}"
+		;
+
+functionCall	: ID PA exprList? PC //func call like f(), f(x), f(1,2)
+		;
+
+exprList 	: (expr|oal) (COMA exprList)* 
+		;
+
+expr		: functionCall
+		| ARRAY
+		| ID
+		| ENTERO
+		| PA expr PC
 		;

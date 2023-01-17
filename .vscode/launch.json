@@ -9,7 +9,7 @@
 			"type": "antlr-debug",
 			"request": "launch",
 			"grammar": "${file}",
-			"input": "input/funcion.txt",
+			"input": "input/funcSimple.txt",
 			"startRule": "programa",
 			"printParseTree": true,
 			"visualParseTree": true

@@ -3,6 +3,9 @@ package compiladores_demo;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
+
 import compiladores_demo.compiladorParser.AsignacionContext;
 import compiladores_demo.compiladorParser.BloqueContext;
 import compiladores_demo.compiladorParser.DeclaracionContext;
@@ -28,6 +31,8 @@ public class MiListener extends compiladorBaseListener {
 	int paramsCallCount;
 	Boolean declFlag;
 	Boolean funcCallFlag;
+	Boolean errorFlag;
+	Boolean genericErrorFlag;
 	ArrayList<String> vars;	//lista de variables declaradas a agregar en la tabla de simbolos
 	// ArrayList<String> varsaux; //lista de variables declaras para test
 	ArrayList<Boolean> init; //flag de init para las variables declaradas a agregar en la tabla de simbolos
@@ -37,14 +42,14 @@ public class MiListener extends compiladorBaseListener {
 	// public void visitTerminal(TerminalNode node) {
 	// 	tokens++;
 	// 	//System.out.println("|" + node.getText() + "|");
-	// 	// TODO Auto-generated method stub
+	// 	
 	// }
 
 	
 
 	// @Override
 	// public void enterDeclaracion(DeclaracionContext ctx) {
-	// 	// TODO Auto-generated method stub
+	// 	
 	// 	System.out.print("Inicio declaracion ->" + ctx.getText());
 	// 	System.out.println("<- | start |" + ctx.getStart() + "| stop |" + ctx.
 	// 	getStop() + "|");
@@ -55,7 +60,7 @@ public class MiListener extends compiladorBaseListener {
 	
 	@Override
 	public void enterSecvar(SecvarContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// System.out.println("Inicio secvar");
 		//init.add(false);
 
@@ -66,7 +71,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitSecvar(SecvarContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// TerminalNode temp = ctx.getToken(15, 0);
 		// System.out.println("--> |" + temp.getText() + "|");
 		if(ctx.COMA()!=null){
@@ -85,7 +90,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterAsignacion(AsignacionContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// System.out.println("Inicio asignacion");
 		// init.add(0,false);
 		// initCount++;
@@ -97,26 +102,46 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitAsignacion(AsignacionContext ctx) {
-		// TODO Auto-generated method stub
+		
 		//init.set(initCount, true);
 		// if(ctx.getToken(15, 0) == null) init.set(initCount, true);
 		boolean newFlag = false;
 
 		if(prevEquals.size()>0){
 			if((symbolsTable.findSymbol(prevEquals.get(0))!=null)){
-				if(symbolsTable.findSymbol(postEquals.get(0))!=null){
-					// if(symbolsTable.findSymbol(ctx.ID(0).getText()).getType() == symbolsTable.findSymbol(ctx.ID(0).getText()).getType()){
-						symbolsTable.findSymbol(prevEquals.get(0)).setInitialized(true);
-						symbolsTable.findSymbol(postEquals.get(0)).setUsed(true);
-					// }
-					// else System.out.println("ERROR: ");
+				if(symbolsTable.findLocalSymbol(prevEquals.get(0))!=null){
+					if(!declFlag) symbolsTable.findLocalSymbol(prevEquals.get(0)).setInitialized(true);
+					else {
+						System.out.println("ERROR: ya existe la variable '" + prevEquals.get(0) + "'");
+						errorFlag = true;
+						genericErrorFlag = true;
+					}
 				}
-				else System.out.println("ERROR1: no existe la variable " + postEquals.get(0));
+				else if(declFlag && ctx.EQUALS() != null) init.add(0,true);
+				else symbolsTable.findSymbol(prevEquals.get(0)).setInitialized(true);
+
+				if(postEquals.size()>0 && !errorFlag){
+					if(symbolsTable.findSymbol(postEquals.get(0))!=null){
+						// if(symbolsTable.findSymbol(ctx.ID(0).getText()).getType() == symbolsTable.findSymbol(ctx.ID(0).getText()).getType()){
+							
+							symbolsTable.findSymbol(postEquals.get(0)).setUsed(true);
+						// }
+						// else System.out.println("ERROR: ");
+					}
+					else {
+						System.out.println("ERROR: no existe la variable " + postEquals.get(0));
+						genericErrorFlag = true;
+					}
+					
+				}
 			}
-			else if(!declFlag) System.out.println("ERROR2: no existe la variable " + prevEquals.get(0));
+			else if(!declFlag) {
+				System.out.println("ERROR: no existe la variable " + prevEquals.get(0));
+				genericErrorFlag = true;
+			}
 			else if(ctx.EQUALS() != null)init.add(0,true);
 			else init.add(0,false);
-
+			
 
 			if(!declFlag) prevEquals.clear();
 		}
@@ -129,7 +154,10 @@ public class MiListener extends compiladorBaseListener {
 						newFlag=true;
 					}
 					// else if(vars.contains(ctx.ID(0).getText())) newFlag=true;
-					else System.out.println("ERROR3: no existe la variable " + postEquals.get(0));
+					else {
+						System.out.println("ERROR: no existe la variable " + postEquals.get(0));
+						genericErrorFlag = true;
+					}
 
 					
 				}
@@ -137,7 +165,10 @@ public class MiListener extends compiladorBaseListener {
 					if(symbolsTable.findSymbol(postEquals.get(0))!=null){
 						symbolsTable.findSymbol(postEquals.get(0)).setInitialized(true);
 					}
-					else System.out.println("ERROR4: no existe la variable " + postEquals.get(0));
+					else {
+						System.out.println("ERROR: no existe la variable " + postEquals.get(0));
+						genericErrorFlag = true;
+					}
 					
 				}
 			}
@@ -155,7 +186,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterFunctionDecl(FunctionDeclContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// System.out.println("Voy a declarar una funcion");
 		funcParams.clear();
 		symbolsTable.addContext();
@@ -164,7 +195,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitFunctionDecl(FunctionDeclContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// System.out.print("Declare la funcion -> " + ctx.TIPO() + " " + ctx.ID() + "( ");
 		boolean errorFlag = false;
 		Iterator<Id> unused = symbolsTable.getUnusedSymbols().iterator();
@@ -196,7 +227,10 @@ public class MiListener extends compiladorBaseListener {
 			else errorFlag = true;
 		}
 
-		if(errorFlag) System.out.println("ERROR: `" + ctx.ID().getText() + "` redeclarado como otro tipo de símbolo");
+		if(errorFlag) {
+			System.out.println("ERROR: `" + ctx.ID().getText() + "` redeclarado como otro tipo de símbolo");
+			genericErrorFlag = true;
+		}
 
 
 		// for (ArrayList<String> p : funcParams){
@@ -213,14 +247,14 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterFormalParameter(FormalParameterContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// super.enterFormalParameter(ctx);
 	}
 
 
 	@Override
 	public void exitFormalParameter(FormalParameterContext ctx) {
-		// TODO Auto-generated method stub
+		
 		ArrayList<String> temp = new ArrayList<String>();
 		if((ctx.TIPO() != null)&&(ctx.ID() != null)){
 			temp.add(ctx.TIPO().getText().toUpperCase());
@@ -236,7 +270,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterFunctionCall(FunctionCallContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// super.enterFunctionCall(ctx);
 		paramsCallCount = 0;
 		funcCallFlag = true;
@@ -245,7 +279,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitFunctionCall(FunctionCallContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// Boolean errorFlag
 		if(symbolsTable.findSymbol(ctx.ID().getText()) != null){
 			if(symbolsTable.findSymbol(ctx.ID().getText()) instanceof Funcion){
@@ -271,14 +305,14 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterExprList(ExprListContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// super.enterExprList(ctx);
 	}
 
 
 	@Override
 	public void exitExprList(ExprListContext ctx) {
-		// TODO Auto-generated method stub
+		
 		paramsCallCount++;
 		// super.exitExprList(ctx);
 	}
@@ -287,14 +321,14 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterExpr(ExprContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// super.enterExpr(ctx);
 	}
 
 
 	@Override
 	public void exitExpr(ExprContext ctx) {
-		// TODO Auto-generated method stub
+		
 		String id="";
 		if(ctx.ID()!=null){
 			id+=ctx.ID().getText();
@@ -323,10 +357,11 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterDeclaracion(DeclaracionContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// System.out.println("Inicio declaracion");
 		// initCount = -1;
 		declFlag = true;
+		errorFlag = false;
 		vars.clear();
 		init.clear();
 		prevEquals.clear();
@@ -335,33 +370,39 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitDeclaracion(DeclaracionContext ctx) {
-		// TODO Auto-generated method stub
+		
 		// System.out.println("variable " + ctx.ID().getText());
-		if(prevEquals.size()>0){
-			vars.add(prevEquals.get(0));
-			// varsaux.add(ctx.ID().getText());
-			Iterator<String> itr = vars.iterator();
-			Integer i = 0;
+		if(!errorFlag){
+			if(prevEquals.size()>0){
+				vars.add(prevEquals.get(0));
+				// varsaux.add(ctx.ID().getText());
+				Iterator<String> itr = vars.iterator();
+				Integer i = 0;
 
-			while (itr.hasNext()){
-				String temp = itr.next();
+				while (itr.hasNext()){
+					String temp = itr.next();
 
-				// System.out.println("variable: " + temp + " tipo: " + ctx.TIPO().getText().toUpperCase() + " declarada: " + init.get(i));
-				if(symbolsTable.findLocalSymbol(temp) == null){
-					Variable var = new Variable(temp, DataType.valueOf(ctx.TIPO().getText().toUpperCase()), init.get(i), false);
+					// System.out.println("variable: " + temp + " tipo: " + ctx.TIPO().getText().toUpperCase() + " declarada: " + init.get(i));
+					if(symbolsTable.findLocalSymbol(temp) == null){
+						Variable var = new Variable(temp, DataType.valueOf(ctx.TIPO().getText().toUpperCase()), init.get(i), false);
 
-					symbolsTable.addSymbol(var);
+						symbolsTable.addSymbol(var);
 
-					// System.out.println(var);
+						// System.out.println(var);
+					}
+					else {
+						System.out.println("ERROR: `" + temp + "` redeclarado como otro tipo de símbolo");
+						genericErrorFlag = true;
+					}
+				// 	// System.out.println("|" + temp + "|");
+					i++;
 				}
-				else {
-					System.out.println("ERROR: `" + temp + "` redeclarado como otro tipo de símbolo");
-				}
-			// 	// System.out.println("|" + temp + "|");
-				i++;
+			}
+			else {
+				System.out.println("ERROR: falta nombre de simbolo");
+				genericErrorFlag = true;
 			}
 		}
-		else System.out.println("ERROR: falta nombre de simbolo");
 		declFlag=false;
 
 		// System.out.println("Fin declaracion ->" + ctx.getText());
@@ -374,7 +415,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterPrograma(ProgramaContext ctx) {
-		// TODO Auto-generated method stub
+		
 		System.out.println("-\nComienza compilacion\n-");
 		symbolsTable = new SymbolsTable();
 		symbolsTable.addContext();
@@ -386,11 +427,12 @@ public class MiListener extends compiladorBaseListener {
 		init = new ArrayList<Boolean>();
 		declFlag = false;
 		funcCallFlag = false;
+		genericErrorFlag = false;
 	}
 
 	@Override
 	public void exitPrograma(ProgramaContext ctx) {
-		// TODO Auto-generated method stub
+		
 		
 		// System.out.println("---- Salgo programa ----");
 		// System.out.println(symbolsTable);
@@ -400,7 +442,10 @@ public class MiListener extends compiladorBaseListener {
 			System.out.println("WARNING: simbolo `" + unused.next().getName() + "` declarado pero no utilizado");
 		}
 
-		symbolsTable.delContext();
+		// System.out.println("---- Salgo programa ----");
+		// System.out.println(symbolsTable);
+		
+		// symbolsTable.delContext();
 		System.out.println("-\nFin compilacion\n-");
 		// Iterator<String> itr = varsaux.iterator();
 		// Integer i = 0;
@@ -429,11 +474,12 @@ public class MiListener extends compiladorBaseListener {
 		// System.out.println("Se encontraron " + tokens + " tokens");
 		// System.out.println("Se realizaron " + decl + " declaraciones");
 		// System.out.println("Se declararon " + vars + " variables");
+
 	}
 
 	@Override
 	public void enterBloque(BloqueContext ctx) {
-		// TODO Auto-generated method stub
+		
 		symbolsTable.addContext();
 
 		// System.out.println("\nantes del bloque: ");
@@ -447,7 +493,7 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitBloque(BloqueContext ctx) {
-		// TODO Auto-generated method stub
+		
 		
 
 		// System.out.println("----------------------");
@@ -458,14 +504,14 @@ public class MiListener extends compiladorBaseListener {
 		// 	+ id.getType() + " initializaed: " + id.getInitialized() + " used: "
 		// 	+ id.getUsed());
 		// }
-		System.out.println("---- Salgo bloque ----");
-		System.out.println(symbolsTable);
+		// System.out.println("---- Salgo bloque ----");
+		// System.out.println(symbolsTable);
 
-		Iterator<Id> unused = symbolsTable.getUnusedSymbols().iterator();
+		// Iterator<Id> unused = symbolsTable.getUnusedSymbols().iterator();
 
-		while(unused.hasNext()){
-			System.out.println("WARNING: simbolo `" + unused.next().getName() + "` declarado pero no utilizado");
-		}
+		// while(unused.hasNext()){
+		// 	System.out.println("WARNING: simbolo `" + unused.next().getName() + "` declarado pero no utilizado");
+		// }
 
 		
 		
@@ -476,31 +522,32 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterInst_for(Inst_forContext ctx) {
-		// TODO Auto-generated method stub
+		
 		symbolsTable.addContext();//super.enterInst_for(ctx);
 	}
 
 
 	@Override
 	public void exitInst_for(Inst_forContext ctx) {
-		// TODO Auto-generated method stub
+		
 		symbolsTable.delContext();//super.exitInst_for(ctx);
 	}
 
 
 	@Override
 	public void enterFactor(FactorContext ctx) {
-		// TODO Auto-generated method stub
+		
 		//super.enterFactor(ctx);
 	}
 
 
 	@Override
 	public void exitFactor(FactorContext ctx) {
-		// TODO Auto-generated method stub
+		
 		if(ctx.ID()!=null){
 			if(symbolsTable.findSymbol(ctx.ID().getText())==null){
 				System.out.println("ERROR: no existe la variable " + ctx.ID().getText());
+				genericErrorFlag = true;
 				// ctx.exitRule(null);
 			}
 			else {
@@ -516,6 +563,7 @@ public class MiListener extends compiladorBaseListener {
 		if(ctx.ID()!=null){
 			if(symbolsTable.findSymbol(ctx.ID().getText())==null){
 				System.out.println("ERROR: no existe la variable " + ctx.ID().getText());
+				genericErrorFlag = true;
 				// ctx.exitRule(null);
 			}
 			else {
@@ -524,7 +572,17 @@ public class MiListener extends compiladorBaseListener {
 		}
 	}
 
-	
-	
+
+	@Override
+	public void exitEveryRule(ParserRuleContext ctx) {
+
+		if(ctx.getChild(ErrorNode.class,0)!=null) genericErrorFlag = true;
+
+	}
+
+
+	public Boolean getErrorFlag(){
+		return genericErrorFlag;
+	}	
 	
 }
