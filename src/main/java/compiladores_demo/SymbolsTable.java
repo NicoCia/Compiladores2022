@@ -84,6 +84,18 @@ public class SymbolsTable {
         return ret;
     }
 
+    public ArrayList<Id> getNotInitializedSymbols(){
+        ArrayList<Id> ret = new ArrayList<Id>();
+        Iterator<Id> itr = table.getLast().values().iterator();
+
+        while(itr.hasNext()){
+            Id temp = itr.next();
+            if((!temp.getInitialized())&&temp.getUsed()) ret.add(temp);
+        }
+
+        return ret;
+    }
+
     @Override
     public String toString() {
         String texto = "";

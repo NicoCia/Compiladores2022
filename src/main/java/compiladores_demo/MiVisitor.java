@@ -41,20 +41,21 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	Integer varsCount;
 	Integer labelsCount;
 	Integer factorCount;
-	String texto, tipo;
+	String texto, tipo, outputFile;
 	ArrayList<String> tempVarsList;
 	ArrayList<String> labelsList;
 	HashMap<String, String> funcLabels;
 	Boolean fileFlag;
 
-	public MiVisitor() {
+	public MiVisitor(String inputFile) {
 		varsCount = 0;
 		labelsCount = 0;
 		factorCount = 0;
 		tempVarsList = new ArrayList<String>();
 		labelsList = new ArrayList<String>();
 		funcLabels = new HashMap<String, String>();
-		createFile("codIntermedio.txt");
+		outputFile = "output/" + inputFile + "_codIntermedio.txt";
+		createFile(outputFile);
 		fileFlag = false;
 	}
 
@@ -109,7 +110,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	@Override
 	public String visitSecvar(SecvarContext ctx) {
 		if(ctx.getChildCount()>0){
-			texto = tipo + " " + ctx.getChild(1).getText();
+			texto = tipo + ctx.getChild(1).getText();
 			writeFile(texto);
 			if(ctx.getChild(SecvarContext.class, 0)!=null){
 				visit(ctx.getChild(SecvarContext.class, 0));
@@ -238,7 +239,8 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	@Override
 	public String visitFormalParameter(FormalParameterContext ctx) {
-		texto = ctx.ID().getText() + " = pop"; // saco los parametros de la funcion
+		//texto = ctx.ID().getText() + " = pop"; // saco los parametros de la funcion
+		texto = "pop " + ctx.ID().getText();
 		writeFile(texto);
 		return "";
 	}
@@ -303,17 +305,25 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	public String visitFunctionDecl(FunctionDeclContext ctx) {
 		String tempLabel;
 		if(ctx.getChild(BloqueContext.class, 0)!=null){
-			tempLabel = labelsGenerator();
-			funcLabels.put(ctx.ID().getText(), tempLabel);
+			if(funcLabels.containsKey(ctx.ID().getText())) tempLabel = funcLabels.get(ctx.ID().getText());
+			else {
+				tempLabel = labelsGenerator();
+				funcLabels.put(ctx.ID().getText(), tempLabel);
+			}
 			// labelsList.add(0,tempLabel);
 			texto = "label " + tempLabel; // etiqueta comienzo de funcion
 			writeFile(texto);
-			texto = "d = pop";
+			//texto = "d = pop";
+			texto = "pop d";
 			writeFile(texto);
 			if(ctx.getChild(FormalParametersContext.class, 0)!=null){
 				visit(ctx.getChild(FormalParametersContext.class, 0));
 			}
 			visit(ctx.getChild(BloqueContext.class, 0));
+		}
+		else {
+			tempLabel = labelsGenerator();
+			funcLabels.put(ctx.ID().getText(), tempLabel);
 		}
 		return "";
 	}
@@ -325,7 +335,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 			texto = "pop";
 		}
 		else if(ctx.getChild(ExprContext.class, 0)!=null) texto = visit(ctx.getChild(ExprContext.class, 0));
-		else texto = ctx.getChild(0).getText();
+		else texto = ctx.getText();
 		return texto;
 	}
 
@@ -348,13 +358,17 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 				aux = visit(ctx.getChild(ExprContext.class, 0));
 				if(aux.equals("pop")){
 					aux = tempVariableGenerator();
-					texto = aux + " = pop";
+					//texto = aux + " = pop";
+					texto = "pop " + aux;
 					writeFile(texto);
 				}
 			}
 			texto = "push " + aux;
 			writeFile(texto);
 		}
+
+		if(ctx.getChild(ExprListContext.class, 0)!=null) visit(ctx.getChild(ExprListContext.class, 0));
+
 		return "";
 	}
 
@@ -527,7 +541,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	private void writeFile(String text) {
 		// System.out.println(text);
 		try {
-			FileWriter myWriter = new FileWriter("codIntermedio.txt",fileFlag);
+			FileWriter myWriter = new FileWriter(outputFile,fileFlag);
 			myWriter.append(text+"\n");
 			myWriter.close();
 			fileFlag = true;

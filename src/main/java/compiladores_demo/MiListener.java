@@ -200,7 +200,7 @@ public class MiListener extends compiladorBaseListener {
 		boolean errorFlag = false;
 		Iterator<Id> unused = symbolsTable.getUnusedSymbols().iterator();
 
-		while(unused.hasNext()){
+		while(unused.hasNext()&&(ctx.getChild(BloqueContext.class, paramsCallCount)!=null)){
 			System.out.println("WARNING: simbolo `" + unused.next().getName() + "` declarado pero no utilizado");
 		}
 		symbolsTable.delContext();
@@ -220,7 +220,7 @@ public class MiListener extends compiladorBaseListener {
 			if(symbolsTable.findLocalSymbol(ctx.ID().getText()).getInitialized() == false ){
 				if(ctx.bloque()!=null) {
 					symbolsTable.findLocalSymbol(ctx.ID().getText()).setInitialized(true);
-					System.out.println(symbolsTable.findLocalSymbol(ctx.ID().getText()));
+					//System.out.println(symbolsTable.findLocalSymbol(ctx.ID().getText()));
 				}
 				else errorFlag = true;
 			}
@@ -284,18 +284,30 @@ public class MiListener extends compiladorBaseListener {
 		if(symbolsTable.findSymbol(ctx.ID().getText()) != null){
 			if(symbolsTable.findSymbol(ctx.ID().getText()) instanceof Funcion){
 
-				if(symbolsTable.findSymbol(ctx.ID().getText()).getInitialized()){ 
-					Funcion func = (Funcion)symbolsTable.findSymbol(ctx.ID().getText());
-					// System.out.println("tengo: " + paramsCallCount + " necesito: " + func.getArgsSize());
-					if(paramsCallCount > func.getArgsSize()) System.out.println("ERROR: demasiados argumentos para la funcion `" + ctx.ID().getText() + "`");
-					else if(paramsCallCount < func.getArgsSize()) System.out.println("ERROR: argumentos insuficientes para la funcion `" + ctx.ID().getText() + "`");
-					else symbolsTable.findSymbol(ctx.ID().getText()).setUsed(true);
+				
+				Funcion func = (Funcion)symbolsTable.findSymbol(ctx.ID().getText());
+				// System.out.println("tengo: " + paramsCallCount + " necesito: " + func.getArgsSize());
+				if(paramsCallCount > func.getArgsSize()) {
+					System.out.println("ERROR: demasiados argumentos para la funcion `" + ctx.ID().getText() + "`");
+					genericErrorFlag = true;
 				}
-				else System.out.println("ERROR: la funcion `" + ctx.ID().getText() + "` no esta inicializada");
+				else if(paramsCallCount < func.getArgsSize()) {
+					System.out.println("ERROR: argumentos insuficientes para la funcion `" + ctx.ID().getText() + "`");
+					genericErrorFlag = true;
+				}
+				else symbolsTable.findSymbol(ctx.ID().getText()).setUsed(true);
+				// }
+				// else System.out.println("ERROR: la funcion `" + ctx.ID().getText() + "` no esta inicializada");
 			}
-			else System.out.println("ERROR: el simbolo `" + ctx.ID().getText() + "` no es una funcion");
+			else {
+				System.out.println("ERROR: el simbolo `" + ctx.ID().getText() + "` no es una funcion");
+				genericErrorFlag = true;
+			}
 		}
-		else System.out.println("ERROR: `" + ctx.ID().getText() + "` no es una funcion declarada");
+		else {
+			System.out.println("ERROR: `" + ctx.ID().getText() + "` no es una funcion declarada");
+			genericErrorFlag = true;
+		}
 
 		funcCallFlag = false;
 	}
@@ -344,7 +356,10 @@ public class MiListener extends compiladorBaseListener {
 		if(!id.equals("")){
 			if(funcCallFlag){
 				if(symbolsTable.findSymbol(id)!=null){
-					symbolsTable.findSymbol(id).setUsed(true);
+					if(symbolsTable.findSymbol(id).getInitialized()==true) symbolsTable.findSymbol(id).setUsed(true);
+					else {
+						System.out.println("WARNING: simbolo `" + symbolsTable.findSymbol(id).getName() + "` utilizado sin inicializar");
+					}
 				}
 			}
 			else{
@@ -442,8 +457,10 @@ public class MiListener extends compiladorBaseListener {
 			System.out.println("WARNING: simbolo `" + unused.next().getName() + "` declarado pero no utilizado");
 		}
 
+		
+
 		// System.out.println("---- Salgo programa ----");
-		// System.out.println(symbolsTable);
+		//System.out.println(symbolsTable);
 		
 		// symbolsTable.delContext();
 		System.out.println("-\nFin compilacion\n-");
@@ -493,8 +510,12 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void exitBloque(BloqueContext ctx) {
+		Iterator<Id> notinitialized = symbolsTable.getNotInitializedSymbols().iterator();
 		
-		
+		while(notinitialized.hasNext()){
+			System.out.println("ERROR: simbolo `" + notinitialized.next().getName() + "` utilizado pero no inicializado");
+			genericErrorFlag = true;
+		}
 
 		// System.out.println("----------------------");
 		// System.out.println("despues del bloque: ");

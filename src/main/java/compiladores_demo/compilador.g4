@@ -135,7 +135,7 @@ inst_while	: WHILE PA oal PC instruccion
 inst_for	: FOR PA (declaracion|asignacion) PYC oal PYC (oal|asignacion) PC instruccion 
 		;
 
-inst_if		: IF PA oal PC instruccion ELSE? instruccion? 
+inst_if		: IF PA oal PC instruccion (ELSE instruccion)? 
 		;
 
 ireturn		: RET (ID|ENTERO|BOOLEAN|oal)? PYC //expr? PYC 
@@ -220,7 +220,7 @@ exprList 	: (expr|oal) (COMA exprList)*
 
 expr		: functionCall
 		| ARRAY
-		| ID
+		| '-'? ID
 		| ENTERO
 		| PA expr PC
 		;

@@ -9,7 +9,8 @@ public class App {
     public static void main(String[] args) throws Exception {
         // System.out.println("Hello, World!!!");
         // create a CharStream that reads from file
-        CharStream input = CharStreams.fromFileName("input/funcSimple.txt");//"input/entrada.txt");
+        String inputFile = "funcion";
+        CharStream input = CharStreams.fromFileName("input/" + inputFile + ".txt");//"input/entrada.txt");
 
         // create a lexer that feeds off of input CharStream
         compiladorLexer lexer = new compiladorLexer(input);
@@ -32,7 +33,7 @@ public class App {
         ParseTree tree = parser.programa();
         // Conectamos el visitor
         if(!escucha.getErrorFlag()){
-            MiVisitor visitor = new MiVisitor();
+            MiVisitor visitor = new MiVisitor(inputFile);
             visitor.visit(tree);
         }
         // // System.out.println(visitor);
