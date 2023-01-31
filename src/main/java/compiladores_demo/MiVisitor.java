@@ -142,7 +142,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	@Override
 	public String visitOal(OalContext ctx) {
-		System.out.println(ctx.getText());
+
 		if (!ctx.getParent().getClass().equals(FactorContext.class))
 			tempVarsList.clear();
 		return super.visitOal(ctx);
@@ -518,7 +518,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	private String tempVariableGenerator() {
 		String ret = "t" + varsCount;
-		System.out.println("creo a " + ret);
+
 		varsCount++;
 		return ret;
 	}
@@ -570,7 +570,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	@Override
 	public String visitInstruccion(InstruccionContext ctx) {
-		System.out.println(ctx.getText());
+
 		return super.visitInstruccion(ctx);
 	}
 

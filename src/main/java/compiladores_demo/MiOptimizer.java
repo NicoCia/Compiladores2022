@@ -8,6 +8,7 @@ import java.io.FileWriter; // Import the FileWriter class
 import java.io.IOException; // Import the IOException class to handle errors
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class MiOptimizer{
@@ -25,9 +26,10 @@ public class MiOptimizer{
 	}
 
 	public void optimizeCode(){
-		Integer optRounds = 1;
+		Integer optRounds = 2;
 		if(lines!=null){
 			for(int i = 0; i < optRounds.intValue(); i++){
+				
 				constantReplacement();
 				writeFile(outputFile);
 			}
@@ -46,19 +48,21 @@ public class MiOptimizer{
 
 	private void constantReplacement(){
 		Iterator<String> itr = lines.iterator();
+		List<String> replaceTempVariablesList = new ArrayList<>();
+		List<String> replaceValuesList = new ArrayList<>();
 		String line;
-		String regex = " [0-9]*[-+\\*/][0-9]*";//[0-9]*";
+		String regexConstantOal = " [0-9]*[-+\\*/][0-9]*";
+		String regexConstantAssign = " [0-9]*";
 		while(itr.hasNext()){
 			line = itr.next();
 			if(line.contains("=")){
 				String aux [] = line.split("=");
-				if(aux[1].matches(regex)) {
+				if(aux[1].matches(regexConstantOal)) {
 					int a, b, r;
 					char op;
 					for(int i=0; i<aux[1].length(); i++){
 						op = aux[1].charAt(i);
 						if(op == '+'||op == '-'||op == '*'||op == '/'){
-							// System.out.println("old line:" + line);
 							a = Integer.parseInt(aux[1].substring(1, i));
 							b = Integer.parseInt(aux[1].substring(i+1));
 							switch(op){
@@ -71,13 +75,28 @@ public class MiOptimizer{
 							}
 							lines.set(lines.indexOf(line), (aux[0] + "= "+r));
 							
-							// System.out.println("new line:" + line);
 							break;
 						}
 
 					}
 
 					
+				}
+				else if(aux[1].matches(regexConstantAssign)) {
+					replaceTempVariablesList.add(aux[0].replace(" ", ""));
+					replaceValuesList.add(aux[1].replace(" ", ""));
+					lines.set(lines.indexOf(line), "");
+				}
+				else {
+					for(int i = 0; i<replaceTempVariablesList.size(); i++){
+						if(aux[1].contains(replaceTempVariablesList.get(i))){
+							aux[1] = aux[1].replace(replaceTempVariablesList.get(i), replaceValuesList.get(i));
+						}
+						
+						
+						
+					}
+					lines.set(lines.indexOf(line), (aux[0] + "=" + aux[1]));
 				}
 			}
 
@@ -98,7 +117,10 @@ public class MiOptimizer{
 		try {
 			FileWriter myWriter = new FileWriter(outputFile+".txt",true);
 			Iterator<String> itr = lines.iterator();
-			while(itr.hasNext()) myWriter.append(itr.next()+"\n");
+			while(itr.hasNext()) {
+				String line = itr.next();
+				if(!line.equals("")) myWriter.append(line+"\n");
+			}
 			myWriter.close();
 			// fileFlag = true;
 		// writeFile("Successfully wrote to the file.");
