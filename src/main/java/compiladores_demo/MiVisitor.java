@@ -162,7 +162,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 			String tempVar = tempVariableGenerator();
 			Integer len = tempVarsList.size() - 1;
 			texto = tempVar + " = ";
-			texto += tempVarsList.get(len - 1) + ctx.getChild(0).getText() + tempVarsList.get(len);
+			texto += tempVarsList.get(len) + ctx.getChild(0).getText() + tempVarsList.get(len - 1);
 			writeFile(texto);
 			tempVarsList.remove(len.intValue());
 			tempVarsList.remove(len.intValue() - 1);
@@ -211,6 +211,12 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 		}
 		else if(ctx.getChild(FactorContext.class, 0)!=null){
 			retText = visit(ctx.getChild(FactorContext.class, 0));
+		}
+		else if(ctx.getChild(0).getText().equals("-") && ctx.ID()!=null){
+			String tempVar = tempVariableGenerator();
+			String texto = tempVar + " = -1*" + ctx.ID().getText();
+			writeFile(texto);
+			retText = tempVar;
 		}
 		else retText = ctx.getText();
 		

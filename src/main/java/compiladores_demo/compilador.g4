@@ -129,7 +129,7 @@ t		: SUMA term t
 		;
 
 factor		: ENTERO 
-		| ID
+		| '-'? ID
 		| PA oal PC
 		| L_NOT factor
 		| functionCall

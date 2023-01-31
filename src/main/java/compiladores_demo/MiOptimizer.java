@@ -2,13 +2,14 @@ package compiladores_demo;
 
 import java.io.BufferedReader;
 import java.io.File; // Import the File class
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter; // Import the FileWriter class
 import java.io.IOException; // Import the IOException class to handle errors
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 public class MiOptimizer{
@@ -28,11 +29,13 @@ public class MiOptimizer{
 	public void optimizeCode(){
 		Integer optRounds = 2;
 		if(lines!=null){
+			lines.add("\n------------------\n");
 			for(int i = 0; i < optRounds.intValue(); i++){
-
+				
 				constantReplacement();
 				fewerAssignments();
-				writeFile(outputFile);
+				fewerOperations();
+				writeFile();
 			}
 
 		}
@@ -40,6 +43,48 @@ public class MiOptimizer{
 	}
 
 	private void fewerOperations(){
+		Iterator<String> itr = lines.iterator();
+		String line;
+		List<String> tempVariablesList = new ArrayList<>();
+		Map<String, String> mathOperationsMap = new HashMap<>();
+		List<String> replaceVariableList = new ArrayList<>();
+		String regexMathOps = ".*[-+\\*/].*";
+
+		while(itr.hasNext()){
+			line = itr.next();
+			int lineIndex = lines.indexOf(line);
+			if(line.contains("=")){
+				
+				String assingParts [] = line.replace(" ", "").split("=");
+
+				if(assingParts[1].matches(regexMathOps)){
+					if(mathOperationsMap.containsKey(assingParts[1])){
+						tempVariablesList.add(mathOperationsMap.get(assingParts[1]));
+						replaceVariableList.add(assingParts[0]);
+						lines.set(lineIndex, "");
+						
+					}
+					else {
+						for(String replaceVar : replaceVariableList){
+							if(assingParts[1].contains(replaceVar)){
+								assingParts[1] = assingParts[1].replace(replaceVar, tempVariablesList.get(replaceVariableList.indexOf(replaceVar)));
+							}
+						}
+
+						mathOperationsMap.put(assingParts[1], assingParts[0]);
+						lines.set(lineIndex, assingParts[0] + " = " + assingParts[1]);
+					}
+					//System.out.println("ea");
+				}
+				
+
+			}
+		}
+
+		System.out.println(tempVariablesList);
+		System.out.println(mathOperationsMap);
+		System.out.println(replaceVariableList);
+
 
 	}
 
@@ -48,6 +93,7 @@ public class MiOptimizer{
 		String line;
 		String regexId = "t[0-9]*";//" ([A-Za-zñ]|'_')([A-Za-zñ]|[0-9]*|'_')* "; //" [0-9]*[-+\\*/][0-9]*";
 		String newLineText;
+
 		while(itr.hasNext()){
 			line = itr.next();
 			int lineIndex = lines.indexOf(line);
@@ -70,19 +116,20 @@ public class MiOptimizer{
 		List<String> replaceTempVariablesList = new ArrayList<>();
 		List<String> replaceValuesList = new ArrayList<>();
 		String line;
-		String regexConstantOal = " [0-9]*[-+\\*/][0-9]*";
-		String regexConstantAssign = " ([0-9]*)";
+		String regexConstantOal = "[0-9]*[-+\\*/][0-9]*";
+		String regexConstantAssign = "([0-9]*)";
 		while(itr.hasNext()){
 			line = itr.next();
+			int lineIndex = lines.indexOf(line);
 			if(line.contains("=")){
-				String aux [] = line.split("=");
+				String aux [] = line.replace(" ", "").split("=");
 				if(aux[1].matches(regexConstantOal)) {
 					int a, b, r;
 					char op;
 					for(int i=0; i<aux[1].length(); i++){
 						op = aux[1].charAt(i);
 						if(op == '+'||op == '-'||op == '*'||op == '/'){
-							a = Integer.parseInt(aux[1].substring(1, i));
+							a = Integer.parseInt(aux[1].substring(0, i));
 							b = Integer.parseInt(aux[1].substring(i+1));
 							switch(op){
 						
@@ -92,7 +139,7 @@ public class MiOptimizer{
 								case '*': r=a*b; break;
 								default: r=0;break;
 							}
-							lines.set(lines.indexOf(line), (aux[0] + "= "+r));
+							lines.set(lineIndex, (aux[0] + " = "+r));
 							
 							break;
 						}
@@ -104,7 +151,7 @@ public class MiOptimizer{
 				else if(aux[1].matches(regexConstantAssign)) {
 					replaceTempVariablesList.add(aux[0].replace(" ", ""));
 					replaceValuesList.add(aux[1].replace(" ", ""));
-					lines.set(lines.indexOf(line), "");
+					lines.set(lineIndex, "");
 				}
 				else {
 					for(int i = 0; i<replaceTempVariablesList.size(); i++){
@@ -115,7 +162,7 @@ public class MiOptimizer{
 						
 						
 					}
-					lines.set(lines.indexOf(line), (aux[0] + "=" + aux[1]));
+					lines.set(lineIndex, (aux[0] + " = " + aux[1]));
 				}
 			}
 
@@ -131,17 +178,17 @@ public class MiOptimizer{
 		}
 	}
 
-	private void writeFile(String text) {
+	private void writeFile() {
 		// System.out.println(text);
 		try {
-			FileWriter myWriter = new FileWriter(outputFile+".txt",true);
+			FileWriter myWriter = new FileWriter(outputFile+".txt",fileFlag);
 			Iterator<String> itr = lines.iterator();
 			while(itr.hasNext()) {
 				String line = itr.next();
 				if(!line.equals("")) myWriter.append(line+"\n");
 			}
 			myWriter.close();
-			// fileFlag = true;
+			fileFlag = true;
 		// writeFile("Successfully wrote to the file.");
 		} catch (IOException e) {
 		// writeFile("An error occurred.");

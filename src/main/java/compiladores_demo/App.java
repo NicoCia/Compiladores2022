@@ -9,7 +9,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         // System.out.println("Hello, World!!!");
         // create a CharStream that reads from file
-        String inputFile = "funcion";
+        String inputFile = "baskara"; // = "funcion";
         CharStream input = CharStreams.fromFileName("input/" + inputFile + ".txt");//"input/entrada.txt");
 
         // create a lexer that feeds off of input CharStream
