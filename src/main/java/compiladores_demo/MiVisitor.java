@@ -1,6 +1,5 @@
 package compiladores_demo;
 
-// import org.antlr.runtime.tree.String;
 import java.io.File; // Import the File class
 import java.io.FileWriter; // Import the FileWriter class
 import java.io.IOException; // Import the IOException class to handle errors
@@ -24,7 +23,6 @@ import compiladores_demo.compiladorParser.Inst_forContext;
 import compiladores_demo.compiladorParser.Inst_ifContext;
 import compiladores_demo.compiladorParser.Inst_whileContext;
 import compiladores_demo.compiladorParser.InstruccionContext;
-// import compiladores_demo.compiladorParser.InstruccionesContext;
 import compiladores_demo.compiladorParser.IreturnContext;
 import compiladores_demo.compiladorParser.L_fContext;
 import compiladores_demo.compiladorParser.L_tContext;
@@ -32,7 +30,6 @@ import compiladores_demo.compiladorParser.L_termContext;
 import compiladores_demo.compiladorParser.OalContext;
 import compiladores_demo.compiladorParser.Op_aritContext;
 import compiladores_demo.compiladorParser.Op_logicContext;
-// import compiladores_demo.compiladorParser.ProgramaContext;
 import compiladores_demo.compiladorParser.SecvarContext;
 import compiladores_demo.compiladorParser.TContext;
 import compiladores_demo.compiladorParser.TermContext;
@@ -54,8 +51,8 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 		tempVarsList = new ArrayList<String>();
 		labelsList = new ArrayList<String>();
 		funcLabels = new HashMap<String, String>();
-		outputFile = "output/" + inputFile + "_codIntermedio.txt";
-		createFile(outputFile);
+		outputFile = "output/" + inputFile + "_codIntermedio";
+		createFile(outputFile+".txt");
 		fileFlag = false;
 	}
 
@@ -197,11 +194,9 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 				texto += ctx.getChild(FContext.class, 0).getChild(0).getText();
 				texto += ctx.getChild(FContext.class, 0).getChild(FactorContext.class, 0).getText();
 				writeFile(texto);
-				String aux = tempVar;
-				tempVar = tempVariableGenerator();
-				tempVarsList.add(tempVar);
-				texto = tempVar + " = " + aux
-						+ ctx.getChild(FContext.class, 0).getChild(FContext.class, 0).getText();
+				String aux = visit(ctx.getChild(FContext.class, 0).getChild(FContext.class, 0));
+				tempVarsList.add(tempVariableGenerator());
+				texto = tempVarsList.get(0) + " = " + tempVar + aux;
 				writeFile(texto);
 			} else {
 				if (ctx.getChild(FContext.class, 0).getChild(FactorContext.class, 0).getChild(OalContext.class, 0) != null) {
@@ -235,6 +230,33 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 			}
 		}
 		return "";
+	}
+
+	
+
+	@Override
+	public String visitF(FContext ctx) {
+		String ret="";
+		if(ctx.getChildCount()>0){
+			if (ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0) != null) {
+				visit(ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0));
+				
+				if(ctx.getChild(FContext.class, 0).getChildCount()>0) {
+					String text, tempVar;
+
+					tempVar = tempVariableGenerator();
+					text = tempVar + " = " + tempVarsList.get(0) + visit(ctx.getChild(FContext.class, 0));
+					writeFile(text);
+					tempVarsList.remove(0);
+					tempVarsList.add(tempVar);
+				}
+				ret = ctx.getChild(0).getText() + tempVarsList.get(0);
+				tempVarsList.remove(0);
+			}
+			else ret = ctx.getText();
+
+		}
+		return ret;
 	}
 
 	@Override
@@ -541,7 +563,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	private void writeFile(String text) {
 		// System.out.println(text);
 		try {
-			FileWriter myWriter = new FileWriter(outputFile,fileFlag);
+			FileWriter myWriter = new FileWriter(outputFile+".txt",fileFlag);
 			myWriter.append(text+"\n");
 			myWriter.close();
 			fileFlag = true;
@@ -562,6 +584,10 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 			visit(ctx.getChild(hijo));
 		}
 		return texto;
+	}
+
+	public String getOutputFile(){
+		return outputFile;
 	}
 
 }

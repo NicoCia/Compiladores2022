@@ -35,6 +35,9 @@ public class App {
         if(!escucha.getErrorFlag()){
             MiVisitor visitor = new MiVisitor(inputFile);
             visitor.visit(tree);
+
+            MiOptimizer optimizer = new MiOptimizer(visitor.getOutputFile());
+            optimizer.optimizeCode();
         }
         // // System.out.println(visitor);
         // // System.out.println(visitor.getErrorNodes());
