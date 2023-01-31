@@ -142,7 +142,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	@Override
 	public String visitOal(OalContext ctx) {
-		// texto = tempVariableGenerator();
+		System.out.println(ctx.getText());
 		if (!ctx.getParent().getClass().equals(FactorContext.class))
 			tempVarsList.clear();
 		return super.visitOal(ctx);
@@ -178,84 +178,65 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	public String visitTerm(TermContext ctx) {
 		
 		
-		String tempVar;
-		Boolean oalFlag = false;
-		
-		if (ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0) != null) {
-			visit(ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0));
-			oalFlag = true;
+		String tempVar, factorText, fText;
 
+		if (ctx.getChild(FContext.class, 0).getChildCount()>0) {
+			factorText = visitFactor(ctx.getChild(FactorContext.class, 0));
+			fText = visitF(ctx.getChild(FContext.class, 0));
+			tempVar = tempVariableGenerator();
+			texto = tempVar + " = " + factorText + fText;
+			writeFile(texto);
+			tempVarsList.add(0, tempVar);
 		}
-		if (ctx.getChild(FContext.class, 0).getChildCount() > 0) {
-
-			if (ctx.getChild(FContext.class, 0).getChild(FContext.class, 0).getChildCount() > 0) {
-				tempVar = tempVariableGenerator();
-				texto = tempVar + " = " + ctx.getChild(FactorContext.class, 0).getText();
-				texto += ctx.getChild(FContext.class, 0).getChild(0).getText();
-				texto += ctx.getChild(FContext.class, 0).getChild(FactorContext.class, 0).getText();
-				writeFile(texto);
-				String aux = visit(ctx.getChild(FContext.class, 0).getChild(FContext.class, 0));
-				tempVarsList.add(tempVariableGenerator());
-				texto = tempVarsList.get(0) + " = " + tempVar + aux;
-				writeFile(texto);
-			} else {
-				if (ctx.getChild(FContext.class, 0).getChild(FactorContext.class, 0).getChild(OalContext.class, 0) != null) {
-					
-					visit(ctx.getChild(FContext.class, 0).getChild(FactorContext.class, 0).getChild(OalContext.class, 0));
-					tempVar = tempVariableGenerator();
-					texto = tempVar + " = " + ctx.getChild(FactorContext.class, 0).getText();
-					texto += ctx.getChild(FContext.class, 0).getChild(0).getText();
-					texto += tempVarsList.get(1);
-					writeFile(texto);
-					tempVarsList.remove(1);
-					tempVarsList.add(tempVar);
-
-				} else if (oalFlag) {
-					tempVar = tempVariableGenerator();
-					texto = tempVar + " = " + tempVarsList.get(tempVarsList.size() - 1)
-							+ ctx.getChild(FContext.class, 0).getText();
-					writeFile(texto);
-					tempVarsList.remove(tempVarsList.size() - 1);
-					tempVarsList.add(tempVar);
-				} else {
-					tempVar = tempVariableGenerator();
-					tempVarsList.add(tempVar);
-					writeFile(tempVar + " = " + ctx.getText());
-				}
-			}
-		} else {
-			if (!oalFlag) {
-				tempVar = ctx.getChild(FactorContext.class, 0).getText();
-				tempVarsList.add(tempVar);
-			}
+		else {
+			tempVar = visit(ctx.getChild(FactorContext.class, 0));
+			tempVarsList.add(tempVar);
 		}
+
+
+
 		return "";
 	}
 
 	
 
 	@Override
+	public String visitFactor(FactorContext ctx) {
+		String retText = "";
+		if(ctx.getChild(FunctionCallContext.class, 0)!=null) visit(ctx.getChild(FunctionCallContext.class, 0));
+		else if(ctx.getChild(OalContext.class, 0)!=null){
+			visit(ctx.getChild(OalContext.class, 0));
+			retText = tempVarsList.get(0);
+			tempVarsList.remove(0);
+		}
+		else if(ctx.getChild(FactorContext.class, 0)!=null){
+			retText = visit(ctx.getChild(FactorContext.class, 0));
+		}
+		else retText = ctx.getText();
+		
+		return retText;
+	}
+
+	@Override
 	public String visitF(FContext ctx) {
 		String ret="";
 		if(ctx.getChildCount()>0){
-			if (ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0) != null) {
-				visit(ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0));
-				
-				if(ctx.getChild(FContext.class, 0).getChildCount()>0) {
-					String text, tempVar;
 
-					tempVar = tempVariableGenerator();
-					text = tempVar + " = " + tempVarsList.get(0) + visit(ctx.getChild(FContext.class, 0));
-					writeFile(text);
-					tempVarsList.remove(0);
-					tempVarsList.add(tempVar);
-				}
-				ret = ctx.getChild(0).getText() + tempVarsList.get(0);
-				tempVarsList.remove(0);
+			String text, tempVar;
+
+			if(ctx.getChild(FContext.class, 0).getChildCount()>0){
+				String factorText, fText;
+				factorText = visitFactor(ctx.getChild(FactorContext.class, 0));
+				fText = visitF(ctx.getChild(FContext.class, 0));
+				tempVar = tempVariableGenerator();
+				text = tempVar + " = " + factorText + fText;
+				writeFile(text);
+				ret = ctx.getChild(0).getText() + tempVar;
+
 			}
-			else ret = ctx.getText();
-
+			else ret = ctx.getChild(0).getText() + visit(ctx.getChild(FactorContext.class, 0));
 		}
+
 		return ret;
 	}
 
@@ -467,69 +448,65 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	@Override
 	public String visitL_f(L_fContext ctx) {
-		
-		return super.visitL_f(ctx);
+		String ret="";
+		if(ctx.getChildCount()>0){
+
+			String text, tempVar;
+
+			if(ctx.getChild(L_fContext.class, 0).getChildCount()>0){
+				String factorText, fText;
+				factorText = visitFactor(ctx.getChild(FactorContext.class, 0));
+				fText = visit(ctx.getChild(L_fContext.class, 0));
+				tempVar = tempVariableGenerator();
+				text = tempVar + " = " + factorText + fText;
+				writeFile(text);
+				ret = ctx.getChild(0).getText() + tempVar;
+
+			}
+			else ret = ctx.getChild(0).getText() + visit(ctx.getChild(FactorContext.class, 0));
+		}
+
+		return ret;
 	}
 
 	@Override
 	public String visitL_t(L_tContext ctx) {
-		visit(ctx.getChild(L_termContext.class, 0));
-		String tempVar = tempVariableGenerator();
-		texto = tempVar + " = ";
-		texto += tempVarsList.get(0) + ctx.getChild(0).getText() + tempVarsList.get(1);
-		writeFile(texto);
-		tempVarsList.remove(0);
-		tempVarsList.remove(0);
-		tempVarsList.add(tempVar);
-		if (ctx.getChild(L_tContext.class, 0).getChildCount() > 0)
-			visit(ctx.getChild(L_tContext.class, 0));
+		if (ctx.getChildCount() > 0) {
+			visit(ctx.getChild(L_termContext.class, 0));
+			String tempVar = tempVariableGenerator();
+			Integer len = tempVarsList.size() - 1;
+			texto = tempVar + " = ";
+			texto += tempVarsList.get(len - 1) + ctx.getChild(0).getText() + tempVarsList.get(len);
+			writeFile(texto);
+			tempVarsList.remove(len.intValue());
+			tempVarsList.remove(len.intValue() - 1);
+			tempVarsList.add(tempVar);
+			if (ctx.getChild(L_tContext.class, 0).getChildCount() > 0)
+				visit(ctx.getChild(L_tContext.class, 0));
+		}
+
 		return "";
 	}
 
 	@Override
 	public String visitL_term(L_termContext ctx) {
-		String tempVar;
+		String tempVar, factorText, l_fText;
 
-		if (ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0) != null) {
-			visit(ctx.getChild(FactorContext.class, 0).getChild(OalContext.class, 0));
-		} else if (ctx.getChild(L_fContext.class, 0).getChildCount() > 0) {
-
-			if (ctx.getChild(L_fContext.class, 0).getChild(L_fContext.class, 0).getChildCount() > 0) {
-				tempVar = tempVariableGenerator();
-				texto = tempVar + " = " + ctx.getChild(FactorContext.class, 0).getText();
-				texto += ctx.getChild(L_fContext.class, 0).getChild(0).getText();
-				texto += ctx.getChild(L_fContext.class, 0).getChild(FactorContext.class, 0).getText();
-				writeFile(texto);
-				String aux = tempVar;
-				tempVar = tempVariableGenerator();
-				tempVarsList.add(tempVar);
-				texto = tempVar + " = " + aux + ctx.getChild(L_fContext.class, 0)
-						.getChild(L_fContext.class, 0).getText();
-				writeFile(texto);
-			} else {
-				if (ctx.getChild(L_fContext.class, 0).getChild(FactorContext.class, 0)
-						.getChild(OalContext.class, 0) != null) {
-					writeFile("holu");
-					visit(ctx.getChild(L_fContext.class, 0).getChild(FactorContext.class, 0)
-							.getChild(OalContext.class, 0));
-					tempVar = tempVariableGenerator();
-					texto = tempVar + " = " + ctx.getChild(FactorContext.class, 0).getText();
-					texto += ctx.getChild(L_fContext.class, 0).getChild(0).getText();
-					texto += tempVarsList.get(1);
-					writeFile(texto);
-					tempVarsList.remove(1);
-					tempVarsList.add(tempVar);
-
-				} else {
-					tempVar = tempVariableGenerator();
-					tempVarsList.add(tempVar);
-					writeFile(tempVar + " = " + ctx.getText());
-				}
-			}
-		} else {
-			tempVar = ctx.getChild(FactorContext.class, 0).getText();
+		if (ctx.getChild(L_fContext.class, 0).getChildCount()>0) {
+			factorText = visitFactor(ctx.getChild(FactorContext.class, 0));
+			l_fText = visit(ctx.getChild(L_fContext.class, 0));
+			tempVar = tempVariableGenerator();
+			texto = tempVar + " = " + factorText + l_fText;
+			writeFile(texto);
+			tempVarsList.add(0, tempVar);
+		}
+		else {
+			tempVar = visit(ctx.getChild(FactorContext.class, 0));
 			tempVarsList.add(tempVar);
 		}
+
+
+
 		return "";
 	}
 
@@ -541,6 +518,7 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 
 	private String tempVariableGenerator() {
 		String ret = "t" + varsCount;
+		System.out.println("creo a " + ret);
 		varsCount++;
 		return ret;
 	}
@@ -589,5 +567,13 @@ public class MiVisitor extends compiladorBaseVisitor<String> {
 	public String getOutputFile(){
 		return outputFile;
 	}
+
+	@Override
+	public String visitInstruccion(InstruccionContext ctx) {
+		System.out.println(ctx.getText());
+		return super.visitInstruccion(ctx);
+	}
+
+	
 
 }
