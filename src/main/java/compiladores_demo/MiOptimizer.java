@@ -81,10 +81,6 @@ public class MiOptimizer{
 			}
 		}
 
-		System.out.println(tempVariablesList);
-		System.out.println(mathOperationsMap);
-		System.out.println(replaceVariableList);
-
 
 	}
 
