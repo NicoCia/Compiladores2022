@@ -21,13 +21,12 @@ import compiladores_demo.compiladorParser.ProgramaContext;
 import compiladores_demo.compiladorParser.SecvarContext;
 
 public class MiListener extends compiladorBaseListener {
-	// private Integer tokens = 0;
-	// private Integer decl = 0;
-	// private Integer vars = 0;
+
 	SymbolsTable symbolsTable; //tabla de simbolos
 	ArrayList<ArrayList<String>> funcParams; //lista de parametros de funcion a agregar en la tabla de simbolos
 	ArrayList<String> prevEquals; //lista de variables del lado izquierdo de la asignacion
 	ArrayList<String> postEquals; //lista de variables del lado derecho de la asinacion
+	String calledFuncName;
 	int paramsCallCount;
 	Boolean declFlag;
 	Boolean funcCallFlag;
@@ -38,24 +37,6 @@ public class MiListener extends compiladorBaseListener {
 	ArrayList<Boolean> init; //flag de init para las variables declaradas a agregar en la tabla de simbolos
 	// Integer initCount = -1; //contador de variables declaradas a agregar en la tabla de simbolos
 
-	// @Override
-	// public void visitTerminal(TerminalNode node) {
-	// 	tokens++;
-	// 	//System.out.println("|" + node.getText() + "|");
-	// 	
-	// }
-
-	
-
-	// @Override
-	// public void enterDeclaracion(DeclaracionContext ctx) {
-	// 	
-	// 	System.out.print("Inicio declaracion ->" + ctx.getText());
-	// 	System.out.println("<- | start |" + ctx.getStart() + "| stop |" + ctx.
-	// 	getStop() + "|");
-	// 	decl++;
-	// }
-	
 	
 	
 	@Override
@@ -317,15 +298,17 @@ public class MiListener extends compiladorBaseListener {
 
 	@Override
 	public void enterExprList(ExprListContext ctx) {
-		
+		if(ctx.getParent().getClass().equals(FunctionCallContext.class)){
+			calledFuncName = ctx.getParent().getChild(0).getText();
+		//System.out.println("llame a " + calledFuncName);
+		}
+		paramsCallCount++;
 		// super.enterExprList(ctx);
 	}
 
 
 	@Override
 	public void exitExprList(ExprListContext ctx) {
-		
-		paramsCallCount++;
 		// super.exitExprList(ctx);
 	}
 
@@ -356,9 +339,22 @@ public class MiListener extends compiladorBaseListener {
 		if(!id.equals("")){
 			if(funcCallFlag){
 				if(symbolsTable.findSymbol(id)!=null){
-					if(symbolsTable.findSymbol(id).getInitialized()==true) symbolsTable.findSymbol(id).setUsed(true);
-					else {
-						System.out.println("WARNING: simbolo `" + symbolsTable.findSymbol(id).getName() + "` utilizado sin inicializar");
+					DataType passedType = symbolsTable.findSymbol(id).getType();
+					if(symbolsTable.findSymbol(calledFuncName) instanceof Funcion){
+						DataType expectedType =((Funcion) symbolsTable.findSymbol(calledFuncName)).getParamType(paramsCallCount-1);
+
+						if(passedType == expectedType){
+							if(symbolsTable.findSymbol(id).getInitialized()==true) symbolsTable.findSymbol(id).setUsed(true);
+							else {
+								System.out.println("WARNING: simbolo `" + symbolsTable.findSymbol(id).getName() + "` utilizado sin inicializar");
+							}
+						}
+						else {
+							System.out.println("ERROR: parametros para llamada a funcion no validos. pass " + passedType + " expect " + expectedType);
+							genericErrorFlag = true;
+						}
+					
+						
 					}
 				}
 			}
@@ -394,7 +390,8 @@ public class MiListener extends compiladorBaseListener {
 				Iterator<String> itr = vars.iterator();
 				Integer i = 0;
 
-				while (itr.hasNext()){
+				while (
+					itr.hasNext()){
 					String temp = itr.next();
 
 					// System.out.println("variable: " + temp + " tipo: " + ctx.TIPO().getText().toUpperCase() + " declarada: " + init.get(i));

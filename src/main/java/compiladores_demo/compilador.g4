@@ -90,7 +90,7 @@ inst_for	: FOR PA (declaracion|asignacion) PYC oal PYC (oal|asignacion) PC instr
 inst_if		: IF PA oal PC instruccion (ELSE instruccion)? 
 		;
 
-ireturn		: RET (ID|ENTERO|BOOLEAN|oal)? PYC //expr? PYC 
+ireturn		: RET (ID|ENTERO|BOOLEAN|oal)? PYC
 		;
 
 bloque		: LLA instrucciones LLC
@@ -105,12 +105,11 @@ formalParameter	: TIPO ID
 declaracion	: TIPO expr asignacion secvar
 		;
 
-asignacion	: expr? EQUALS (expr | oal | asignacion)//(ID | oal | asignacion)
+asignacion	: expr? EQUALS (expr | oal | asignacion)
 		|
 		;
 
 secvar		: COMA (ID|ARRAY) asignacion secvar
-		//| COMA ID secvar
 		|
 		;
 

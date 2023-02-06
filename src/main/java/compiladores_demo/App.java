@@ -4,12 +4,13 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+// Martes 07/02 17:30 aula 107
 // Las diferentes entradas se explicaran oportunamente
 public class App {
     public static void main(String[] args) throws Exception {
         // System.out.println("Hello, World!!!");
         // create a CharStream that reads from file
-        String inputFile = "baskara"; // = "funcion";
+        String inputFile = "funcion"; // = "funcion";
         CharStream input = CharStreams.fromFileName("input/" + inputFile + ".txt");//"input/entrada.txt");
 
         // create a lexer that feeds off of input CharStream
@@ -31,7 +32,7 @@ public class App {
         // En este caso la regla es el simbolo inicial
         // parser.programa();
         ParseTree tree = parser.programa();
-        // Conectamos el visitor
+        // Conectamos el visitor en caso de no detectar errores sintacticos
         if(!escucha.getErrorFlag()){
             MiVisitor visitor = new MiVisitor(inputFile);
             visitor.visit(tree);

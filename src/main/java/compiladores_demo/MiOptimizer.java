@@ -87,7 +87,7 @@ public class MiOptimizer{
 	private void fewerAssignments(){
 		Iterator<String> itr = lines.iterator();
 		String line;
-		String regexId = "t[0-9]*";//" ([A-Za-zñ]|'_')([A-Za-zñ]|[0-9]*|'_')* "; //" [0-9]*[-+\\*/][0-9]*";
+		String regexId = "t[0-9]+";//" ([A-Za-zñ]|'_')([A-Za-zñ]|[0-9]*|'_')* "; //" [0-9]*[-+\\*/][0-9]*";
 		String newLineText;
 
 		while(itr.hasNext()){
@@ -112,8 +112,8 @@ public class MiOptimizer{
 		List<String> replaceTempVariablesList = new ArrayList<>();
 		List<String> replaceValuesList = new ArrayList<>();
 		String line;
-		String regexConstantOal = "[0-9]*[-+\\*/][0-9]*";
-		String regexConstantAssign = "([0-9]*)";
+		String regexConstantOal = "[0-9]+[-+\\*/][0-9]+";
+		String regexConstantAssign = "([0-9]+)";
 		while(itr.hasNext()){
 			line = itr.next();
 			int lineIndex = lines.indexOf(line);

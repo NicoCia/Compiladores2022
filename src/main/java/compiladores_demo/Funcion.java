@@ -26,6 +26,12 @@ public class Funcion extends Id{
 		return args.size();
 	}
 
+	public DataType getParamType(int paramIndex){
+		DataType returnDataType;
+		returnDataType = DataType.valueOf(args.get(paramIndex).get(0));
+		return returnDataType;
+	}
+
 	@Override
 	public String toString(){ 
 		String texto = "";
